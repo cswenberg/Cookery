@@ -5,7 +5,7 @@ export const getInput = () => elements.searchInput.value
 export const clearInput = () => elements.searchInput.value = '' 
 
 const renderRecipe = (recipe) => {
-	console.log(recipe)
+	//console.log(recipe)
 	const markup = `<li>
 	                    <a class="results__link" href="#${recipe.recipe_id}">
 	                        <figure class="results__fig">
@@ -65,6 +65,14 @@ export const renderResults = (recipes, page = 2, resPerPage = 10) => {
 export const clearResults = () => {
 	elements.searchResultsList.innerHTML = ''
 	elements.searchResultsPages.innerHTML = ''
+}
+
+export const highlightSelected = id => {
+	const array = document.querySelectorAll('.results__link')
+	array.forEach(each => {
+		each.classList.remove('results__link--active')
+	}) 
+	document.querySelector(`a[href="#${id}"]`).classList.add('results__link--active')
 }
 
 

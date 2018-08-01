@@ -4,8 +4,13 @@
 
 import Search from './models/Search'
 import Recipe from './models/Recipe'
+import List from './models/List'
 import { elements, renderSpinner, clearSpinner } from './views/base'
 import * as searchView from './views/searchView'
+import * as recipeView from './views/recipeView'
+import * as listView from './views/listView'
+import * as likesView from './views/likesView'
+
 
 /** The Global State
 	- the Search object
@@ -14,7 +19,6 @@ import * as searchView from './views/searchView'
 	- Like recipes
 */
 const state = {}
-
 
 /** 
 	Search Controller
@@ -70,16 +74,22 @@ const controlRecipe = async () => {
 	//get recipe id from url
 	const id = window.location.hash.replace('#', '')
 	if (id) {
+		//prepare ui
+		recipeView.clearRecipe()
+		renderSpinner(elements.recipe)
+
+		if (state.search) searchView.highlightSelected(id)
 
 		state.recipe = new Recipe(id)
 
 		try {
 			await state.recipe.getRecipe()
-
+			state.recipe.parseIngredients()
 			state.recipe.cookTime()
 			state.recipe.servings()
-
-			console.log(state.recipe)
+			//results to ui
+			clearSpinner()
+			recipeView.renderRecipe(state.recipe)
 		} catch(error) {
 			alert(error)
 		}
@@ -89,6 +99,46 @@ const controlRecipe = async () => {
 
 window.addEventListener('hashchange', controlRecipe)
 window.addEventListener('load', controlRecipe)
+
+elements.recipe.addEventListener('click', event => {
+	if (event.target.matches('.btn-increase, .btn-increase *')) {
+		state.recipe.updateServings('increase')
+		recipeView.updateServings(state.recipe)
+	} else if (event.target.matches('.btn-decrease, .btn-decrease *') && state.recipe.servings > 1) {
+		state.recipe.updateServings('decrease')
+		recipeView.updateServings(state.recipe)
+	} else if (event.target.matches('.recipe__btn--shopping, .recipe__btn--shopping *')) {
+		controlList()
+	}
+})
+
+/** 
+	List Controller
+*/
+const controlList = () => {
+
+	if (!state.list) {
+		state.list = new List()
+		window.list = state.list
+	}
+	state.recipe.ingredients.forEach(each => {
+		const item = state.list.addItem(each.count, each.units, each.ingredient)
+		listView.renderItem(item)
+	})
+}
+
+elements.shoppingList.addEventListener('click', event => {
+
+	const id = event.target.closest('.shopping__item').dataset.itemid
+
+	if (event.target.matches('.shopping__delete, .shopping__delete *')) {
+		listView.deleteItem(id)
+	} else if (event.target.matches('.shopping__count--value')) {
+		const value = event.target.value
+		state.list.updateCount(id, value)
+	}
+})
+
 
 
 
