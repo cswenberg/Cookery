@@ -72,7 +72,7 @@ export const highlightSelected = id => {
 	array.forEach(each => {
 		each.classList.remove('results__link--active')
 	}) 
-	document.querySelector(`a[href="#${id}"]`).classList.add('results__link--active')
+	document.querySelector(`.results__link[href="#${id}"]`).classList.add('results__link--active')
 }
 
 

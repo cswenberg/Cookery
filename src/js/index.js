@@ -5,6 +5,7 @@
 import Search from './models/Search'
 import Recipe from './models/Recipe'
 import List from './models/List'
+import Likes from './models/Likes'
 import { elements, renderSpinner, clearSpinner } from './views/base'
 import * as searchView from './views/searchView'
 import * as recipeView from './views/recipeView'
@@ -89,7 +90,7 @@ const controlRecipe = async () => {
 			state.recipe.servings()
 			//results to ui
 			clearSpinner()
-			recipeView.renderRecipe(state.recipe)
+			recipeView.renderRecipe(state.recipe, state.likes.isLiked(id))
 		} catch(error) {
 			alert(error)
 		}
@@ -109,6 +110,8 @@ elements.recipe.addEventListener('click', event => {
 		recipeView.updateServings(state.recipe)
 	} else if (event.target.matches('.recipe__btn--shopping, .recipe__btn--shopping *')) {
 		controlList()
+	} else if (event.target.matches('.recipe__love, .recipe__love *')) {
+		controlLike()
 	}
 })
 
@@ -139,11 +142,44 @@ elements.shoppingList.addEventListener('click', event => {
 	}
 })
 
+/** 
+	Like Controller
+*/
+
+const controlLike = () => {
+
+	if (!state.likes) state.likes = new Likes()
+	const currentId = state.recipe.id
+
+	if (!state.likes.isLiked(currentId)) {
+		//add recipe to likes
+		const like = state.likes.addRecipe(currentId, state.recipe.title, state.recipe.author, state.recipe. image)
+
+		//toggle like button
+		likesView.toggleLikeButton(true)
+
+		//add like to ui
+		likesView.renderLike(like)
+	} else {
+		//remove recipe from likes
+		state.likes.removeRecipe(currentId)
+
+		//toggle like button
+		likesView.toggleLikeButton(false)
+
+		//remove recipe from ui
+		likesView.deleteLike(currentId)
+	}
+	likesView.toggleLikesMenu(state.likes.getNumLikes())
+}
 
 
-
-
-
+window.addEventListener('load', () => {
+	state.likes = new Likes()
+	state.likes.readData()
+	likesView.toggleLikesMenu(state.likes.getNumLikes())
+	state.likes.likes.forEach(like => likesView.renderLike(like))
+})
 
 
 
